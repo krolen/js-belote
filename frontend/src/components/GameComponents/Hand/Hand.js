@@ -1,14 +1,15 @@
 import styles from './Hand.module.scss'
-import { useEffect, useState } from 'react'
+import {useEffect, useState} from 'react'
 import Card from '../Card'
-import { useTranslation } from 'react-i18next';
-import { sortCards } from './../../../modules/GameFunctions';
-import { ReactComponent as ArrowIcon } from './../../../assets/icons/ArrowCardOrder.svg';
-import { Button } from 'react-bootstrap'
-import { log } from '../../../modules/util';
+import {useTranslation} from 'react-i18next';
+import {sortCards} from './../../../modules/GameFunctions';
+import {ReactComponent as ArrowIcon} from './../../../assets/icons/ArrowCardOrder.svg';
+import {Button} from 'react-bootstrap'
+import {log} from '../../../modules/util';
+
 
 const Hand = (props) => {
-    const { t } = useTranslation('translations');
+    const {t} = useTranslation('translations');
     const [selected, setSelected] = useState(-1);
     const [reverseCardOrder, setReverseCardOrder] = useState(false);
 
@@ -21,6 +22,10 @@ const Hand = (props) => {
             props.playSelectedCard(cardsInHand[selected]);
             setSelected(-1)
         }
+    }
+    const playIndexCard = (idx) => {
+        props.playSelectedCard(cardsInHand[idx]);
+        setSelected(-1)
     }
 
     if (selected === -1 && props.validOptions)
@@ -45,6 +50,11 @@ const Hand = (props) => {
                     log("debug", `${index}, ${selected}`)
                 }
 
+                const quickPlayHandler = (index) => {
+                    playIndexCard(index)
+                }
+
+
                 for (const activeCard of props.validOptions) {
                     if (activeCard.suit === cardsInHand[i].suit && activeCard.rank === cardsInHand[i].rank)
                         cardShouldBeActive = true
@@ -52,23 +62,23 @@ const Hand = (props) => {
 
                 cardElement =
                     <div className={props.vertical ? styles.verticalListItem : styles.horizontalListItem}
-                        key={i}>
+                         key={i}>
                         <Card
                             rank={cardsInHand[i].rank}
                             suit={cardsInHand[i].suit}
                             index={i}
                             handleOnCLick={selectHandler}
+                            handleOnDblCLick={quickPlayHandler}
                             selected={(i === selected)}
                             active={cardShouldBeActive && props.roundStatus === 'in_progress'}
                         />
                     </div>
-            }
-            else {
+            } else {
                 cardElement =
                     <div className={props.vertical ? styles.verticalListItem : styles.horizontalListItem}
-                        key={i}>
-                        <Card />
-                    </div >
+                         key={i}>
+                        <Card/>
+                    </div>
             }
             // store which cards can be selected to be used for keyboard controls 
             activeCards.push(cardShouldBeActive && props.roundStatus === 'in_progress')
@@ -130,27 +140,30 @@ const Hand = (props) => {
                     <Button
                         className={styles.switchCardDirectionButton}
                         variant="outline-secondary"
-                        onClick={() => { setSelected(-1); setReverseCardOrder(!reverseCardOrder); }}
+                        onClick={() => {
+                            setSelected(-1);
+                            setReverseCardOrder(!reverseCardOrder);
+                        }}
                     >
                         {reverseCardOrder &&
-                            <ArrowIcon className={styles.arrowRotated} />
+                            <ArrowIcon className={styles.arrowRotated}/>
                         }
                         {!reverseCardOrder &&
-                            <ArrowIcon />
+                            <ArrowIcon/>
                         }
                     </Button>
                 }
-                {props.showCards && selected !== -1 &&
-                    <Button
-                        className={styles.playCardButton}
-                        onClick={playSelectedCard}
-                        variant="outline-primary"
-                    >
-                        <b>
-                            {t("playerHand.playButtonLable")} {cardsInHand[selected].rank}{t(`cardSuits.${cardsInHand[selected].suit}`)}
-                        </b>
-                    </Button>
-                }
+                {/*{props.showCards && selected !== -1 &&*/}
+                {/*    <Button*/}
+                {/*        className={styles.playCardButton}*/}
+                {/*        onClick={playSelectedCard}*/}
+                {/*        variant="outline-primary"*/}
+                {/*    >*/}
+                {/*        <b>*/}
+                {/*            {t("playerHand.playButtonLable")} {cardsInHand[selected].rank}{t(`cardSuits.${cardsInHand[selected].suit}`)}*/}
+                {/*        </b>*/}
+                {/*    </Button>*/}
+                {/*}*/}
             </div>
         </div>
     );

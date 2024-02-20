@@ -10,7 +10,8 @@ export const connectToGameSocket = (room, client, displayName) => {
                 "room": room,
                 "client": client,
                 "displayName": displayName
-            }
+            },
+            timeout: 15000
         });
     socket.connect();
 
@@ -24,7 +25,8 @@ export const connectToServerSocket = (clientID) => {
             query: {
                 "action": "connectToServer",
                 "client": clientID
-            }
+            },
+            timeout: 15000
         }
     );
     socket.connect();

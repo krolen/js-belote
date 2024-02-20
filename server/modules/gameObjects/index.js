@@ -22,6 +22,7 @@ class Deck {
                 this.cards.push(new Card(suit, rank))
         this.shuffle()
     }
+
     // ^^ enable card shuffle ^^
 
     addCardToTop(card) {
@@ -232,6 +233,9 @@ class Round {
         this.roundNum = roundNum;
         this.playerTurn = roundNum % 4;
 
+        // this.playerTurn = roundNum + 3 % 4;
+        // this.playerTurn = roundNum + 2 % 4;
+
         //indexes for players and hands are the same, so players[0]'s hand is hands[0]
         this.hands = []
         for (const player of this.players)
@@ -262,8 +266,7 @@ class Round {
     splitDeck(playername, splitPos) {
         if (playername != this.players[this.playerTurn]) {
             return false
-        }
-        else {
+        } else {
             if (splitPos > 0 && splitPos < 32) {
                 this.mainDeck.split(splitPos);
                 //pass to the next player to "give out cards" to the player after
@@ -276,15 +279,16 @@ class Round {
                 }
 
                 for (let i = this.playerTurn; i < this.playerTurn + 4; i++) {
-                    const cards_to_add = this.mainDeck.grabCardsFromTop(2)
+                    const cards_to_add = this.mainDeck.grabCardsFromTop(3)
                     this.hands[i % 4].addCards(cards_to_add)
                 }
 
                 this.status = this.status_options[1]
 
                 return true
+            } else {
+                return false
             }
-            else { return false }
         }
     }
 
@@ -319,9 +323,15 @@ class Round {
                 }
 
             }
-            this.playerTurn = ((this.playerTurn + 1) % 4)
+            this.shiftPlayerTurn();
+            // this.playerTurn = ((this.playerTurn + 1) % 4)
             return true;
         }
+    }
+
+    shiftPlayerTurn() {
+        this.playerTurn = ((this.playerTurn + 1) % 4)
+        // this.playerTurn = ((this.playerTurn + 3) % 4)
     }
 
     checkSuitCallValid(playername, calledSuit, modifier) {
@@ -351,8 +361,7 @@ class Round {
                     const team = this.getPlayerTeam(playername)
                     if (this.callerTeam == team) return false;
                 }
-            }
-            else return false
+            } else return false
         }
 
         return true
@@ -375,8 +384,7 @@ class Round {
             //check for higher modifier calls
             if (this.checkSuitCallValid(playerName, this.suit, 2)) validSuits.push('x2')
             if (this.checkSuitCallValid(playerName, this.suit, 4)) validSuits.push('x4')
-        }
-        else {
+        } else {
             // if no one has announced so far everything is fair game
             validSuits.push('C')
             validSuits.push('H')
@@ -409,7 +417,7 @@ class Round {
 
             //give out the rest of the cards (3 each)
             for (let i = this.playerTurn; i < this.playerTurn + 4; i++) {
-                const cards_to_add = this.mainDeck.grabCardsFromTop(3)
+                const cards_to_add = this.mainDeck.grabCardsFromTop(2)
                 this.hands[i % 4].addCards(cards_to_add)
             }
 
@@ -484,9 +492,8 @@ class Round {
                 this.status = this.status_options[4];
             }
             return true;
-        }
-        else {
-            this.playerTurn = (this.playerTurn + 1) % 4;
+        } else {
+            this.shiftPlayerTurn();
             return true;
         }
     }
@@ -507,8 +514,7 @@ class Round {
                     points = points + 20;
                     continue;
                 }
-            }
-            else {
+            } else {
                 if (card.rank == '9') continue;
                 if (card.rank == 'J') {
                     points = points + 2;
@@ -626,7 +632,7 @@ class Round {
 
     getPlayerPremiumOptions(playerName) {
         //check if player can call premiums at all
-        let options = { 'S': [], 'C': [], 'B': [] }
+        let options = {'S': [], 'C': [], 'B': []}
         if (playerName != this.players[this.playerTurn]) return options;
         if (this.suit == 'N') return options;
 
@@ -702,8 +708,7 @@ class Round {
                         if (this.suit == 'A') {
                             if (this.cardsOnTable.cards.length == 0) available_premiums.push([cards[i], cards[i + 1]]);
                             else if (this.cardsOnTable.cards[0].suit == cards[i].suit) available_premiums.push([cards[i], cards[i + 1]]);
-                        }
-                        else {
+                        } else {
                             // at this stage we know the belote cards are of the round trump suit because of the 1k checks we've had
                             available_premiums.push([cards[i], cards[i + 1]])
                         }
@@ -879,8 +884,7 @@ class Round {
                 }
                 // if player does not have same suit he can give whatever he wants
                 else return true;
-            }
-            else {
+            } else {
                 // if player has the same suit he must respond higher if possible
                 if (player_has_requested_suit) {
                     if (player_has_stronger_card_from_suit) {
@@ -890,9 +894,8 @@ class Round {
                         else return false;
                     }
                     // if player cannot respond with higher, he must respond with same suit
-                    else
-                        if (initialCard.suit == cardSuit) return true;
-                        else return false;
+                    else if (initialCard.suit == cardSuit) return true;
+                    else return false;
                 }
                 // if player cannot respond with same suit, he can trump the card
                 else {
@@ -931,19 +934,16 @@ class Round {
                 //then compare using the trump card order
                 if (this.trump_card_order.indexOf(rank0) > this.trump_card_order.indexOf(rank1)) return 0
                 else return 1
-            }
-            else {
+            } else {
                 //then compare using the no-trump card order 
                 if (this.no_trump_card_order.indexOf(rank0) > this.no_trump_card_order.indexOf(rank1)) return 0
                 else return 1
             }
-        }
-        else {
+        } else {
             if (this.suit == 'A' || this.suit == 'N') {
                 //handle all trumps and no trumps - new card always loses
                 return 0
-            }
-            else {
+            } else {
                 // if suit1 is trump it always wins, else it should be suit0, because assume 0 was given first
                 if (suit1 == this.suit) return 1
                 else return 0
@@ -1006,7 +1006,8 @@ class Round {
 }
 
 class Game {
-    constructor(players) {
+    constructor(players, meetingUrl) {
+        this.meetingUrl = meetingUrl;
         //teams are 'crossed' in the rounds
         this.t1 = new Team(players[0], players[1]);
         this.t2 = new Team(players[2], players[3]);
@@ -1029,6 +1030,8 @@ class Game {
     }
 
     endCurrentRound() {
+        // this.currentRound.shiftPlayerTurn();
+
         // get deck from current round and cleanup it from placedBy 
         this.deck = this.currentRound.mainDeck;
         for (const card of this.deck.cards)
@@ -1039,7 +1042,8 @@ class Game {
         if (this.currentRound.consecutivePasses == 4) {
             this.consecutivePasses++;
             // shuffle cards on 4 passes
-            if (this.consecutivePasses == 4) {
+            // if (this.consecutivePasses == 4) {
+            if (true) {
                 this.deck.shuffle();
                 this.consecutivePasses = 0;
             }
@@ -1061,8 +1065,7 @@ class Game {
             if (this.teamScores[0] > 151) this.winningTeam = 0
             else this.winningTeam = 1
             this.gameStatus = 'over'
-        }
-        else {
+        } else {
             // archive current round and start new one
             this.pastRounds.push(this.currentRound);
             this.roundNum++;
@@ -1102,8 +1105,7 @@ class Game {
                 if (roundInfo.suit === 'A') final_points[(roundInfo.callerTeam + 1) % 2] += 2;
                 teamTotalScores[(roundInfo.callerTeam + 1) % 2] = teamTotalScores[(roundInfo.callerTeam + 1) % 2] * roundInfo.modifier
                 final_points[(roundInfo.callerTeam + 1) % 2] = Math.floor((teamTotalScores[(roundInfo.callerTeam + 1) % 2] + 5) / 10);
-            }
-            else {
+            } else {
                 //calc points regardless if the game is equal
                 if (roundInfo.suit == 'N') {
                     // handle no trump here
@@ -1112,8 +1114,7 @@ class Game {
 
                     final_points[roundInfo.callerTeam] = Math.floor(teamTotalScores[roundInfo.callerTeam] / 10);
                     final_points[(roundInfo.callerTeam + 1) % 2] = Math.floor(teamTotalScores[(roundInfo.callerTeam + 1) % 2] / 10);
-                }
-                else {
+                } else {
                     if (roundInfo.suit == 'A') {
                         // handle all trump suit here
                         teamTotalScores[roundInfo.callerTeam] += 5;
@@ -1121,8 +1122,7 @@ class Game {
 
                         final_points[roundInfo.callerTeam] = Math.floor(teamTotalScores[roundInfo.callerTeam] / 10);
                         final_points[(roundInfo.callerTeam + 1) % 2] = Math.floor(teamTotalScores[(roundInfo.callerTeam + 1) % 2] / 10);
-                    }
-                    else {
+                    } else {
                         // handle color suits here
                         teamTotalScores[roundInfo.callerTeam] += 3;
                         teamTotalScores[(roundInfo.callerTeam + 1) % 2] += 4
@@ -1142,8 +1142,7 @@ class Game {
                         this.hangingPoints += final_points[roundInfo.callerTeam]
                         final_points[roundInfo.callerTeam] = 0
                         teamTotalScores[roundInfo.callerTeam] = 0
-                    }
-                    else {
+                    } else {
                         // both team don't get any points and everything is put as hanging
                         this.hangingPoints += final_points[0]
                         this.hangingPoints += final_points[1]
@@ -1182,7 +1181,8 @@ class Game {
             roundNum: this.roundNum,
             winningTeam: this.winningTeam,
             consecutivePasses: this.consecutivePasses,
-            teamsValid: this.teamsValid
+            teamsValid: this.teamsValid,
+            meetingUrl: this.meetingUrl
         }
     }
 }

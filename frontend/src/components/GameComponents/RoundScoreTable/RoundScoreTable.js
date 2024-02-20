@@ -1,17 +1,10 @@
 import styles from './RoundScoreTable.module.scss'
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next';
-import { Table } from 'react-bootstrap'
+import { Table, Button } from 'react-bootstrap'
 
 function RoundScoreTable(props) {
     const { t } = useTranslation('translations');
-    const [secondsLeft, setSecondsLeft] = useState(15);
-
-    useEffect(() => {
-        setTimeout(() => {
-            if (secondsLeft !== 0) setSecondsLeft(secondsLeft - 1);
-        }, 1000);
-    });
 
     // add last 10 points to the team that got the last 4 cards
     const lastHandPoints = [0, 0]
@@ -23,6 +16,11 @@ function RoundScoreTable(props) {
             lastHandPoints[props.roundScore.lastHandTeam] += 10;
         totalRoundPoints[0] = props.roundScore.card_scores[0] + props.roundScore.premium_scores[0] + lastHandPoints[0];
         totalRoundPoints[1] = props.roundScore.card_scores[1] + props.roundScore.premium_scores[1] + lastHandPoints[1];
+    }
+
+    const nextRoundAction = (event) => {
+        event.preventDefault();
+        props.nextRoundAction()
     }
 
     return (
@@ -69,7 +67,16 @@ function RoundScoreTable(props) {
                     </tr>
                 }
             </Table>
-            <p>{t('roundScoreTable.nextRoundTimerLabelPt1')} {secondsLeft} {t('roundScoreTable.nextRoundTimerLabelPt2')}</p>
+            {props.showNextRoundButton &&
+                <Button
+                    className={styles.splitPromptFromSubmitButton}
+                    onClick={nextRoundAction}
+                    type={"submit"}
+                >
+                    {'NExt Round'}
+                </Button>
+            }
+
         </div>
     );
 

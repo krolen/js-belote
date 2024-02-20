@@ -37,6 +37,8 @@ const BelotePage = () => {
     const [suitSelectionHistory, setSuitSelectionHistory] = useState([])
     const [selectedPremiums, setSelectedPremiums] = useState([])
 
+    const [meetingUrl, setMeetingUrl] = useState(["Unknown"])
+
     // manage socket communication
     useEffect(() => {
         const roomNameAvailable = ((roomID.length > 0) || (urlRoomId))
@@ -54,6 +56,7 @@ const BelotePage = () => {
                 socket_connection.on("gameStatusUpdate", (args) => {
                     log("debug", `Received game status update ${JSON.stringify(args)}`)
                     setGameStatus(args)
+                    setMeetingUrl(args.meetingUrl)
                 });
 
                 socket_connection.on("roundStatusUpdate", (args) => {
@@ -154,6 +157,10 @@ const BelotePage = () => {
         socket.emit("suitSelect", suit);
     }
 
+    const nextRound = () => {
+        socket.emit("nextRound");
+    }
+
     const handleCardPlay = (card) => {
         // auto-anounce selected premiums
         if (selectedPremiums.length > 0) {
@@ -171,12 +178,12 @@ const BelotePage = () => {
     window.addEventListener("resize", () => { setWindowWidth(window.innerWidth) });
 
     return (
-        < div className={styles.page} >
+        < div className={styles.page}>
             {socket &&
                 <div>
                     <Row fluid='md'>
-                        <Col sm={0} md={0} lg={1} xl={1} />
-                        <Col lg={9} xl={10}>
+                        {/*<Col sm={0} md={0} lg={1} xl={1}/>*/}
+                        <Col lg={6} xl={7}>
                             <div className={styles.gameBoardAndIndicatorsContainer}>
                                 <div className={styles.gameBoardAndHandContainer}>
                                     <GameBoard
@@ -186,12 +193,13 @@ const BelotePage = () => {
                                         validSuitOptions={validSuitOptions}
                                         suitSelectionHistory={suitSelectionHistory}
                                         roundScore={roundScore}
+                                        nextRoundAction={nextRound}
                                         handleDeckSplit={handleDeckSplit}
                                         handleSuitSelect={handleSuitSelect}
                                     />
                                     <div>
                                         <div className={styles.gameBoardWidthMatcherForHand}>
-                                            <div />
+                                            <div/>
                                             <div className={styles.handContainer}>
                                                 <PremiumOptions
                                                     roundStatus={roundStatus}
@@ -212,42 +220,49 @@ const BelotePage = () => {
                                                     playSelectedCard={handleCardPlay}
                                                 />
                                             </div>
-                                            <div />
+                                            <div/>
                                         </div>
                                     </div>
                                 </div>
-                                {windowWidth > 1280 &&
-                                    <div>
-                                        <div className={styles.indicatorsContainer}>
-                                            {roundStatus &&
-                                                <PremiumIndicator
-                                                    premiums={roundStatus.premiums}
-                                                />
-                                            }
-                                            <RoomChat events={lobbyEvents} />
+                                {/*{windowWidth > 1280 &&*/}
+                                {/*    <div>*/}
+                                {/*        <div className={styles.indicatorsContainer}>*/}
+                                {/*            {roundStatus &&*/}
+                                {/*                <PremiumIndicator*/}
+                                {/*                    premiums={roundStatus.premiums}*/}
+                                {/*                />*/}
+                                {/*            }*/}
+                                {/*            <RoomChat events={lobbyEvents}/>*/}
 
-                                            <GameStatusIndicator
-                                                gameStatus={gameStatus}
-                                                roundStatus={roundStatus}
-                                                roomID={roomID}
-                                            />
-                                            {roundStatus &&
-                                                <HandHistory
-                                                    roundStatus={roundStatus}
-                                                />
-                                            }
-                                        </div>
-                                    </div>
-                                }
+                                {/*            <GameStatusIndicator*/}
+                                {/*                gameStatus={gameStatus}*/}
+                                {/*                roundStatus={roundStatus}*/}
+                                {/*                roomID={roomID}*/}
+                                {/*            />*/}
+                                {/*            {roundStatus &&*/}
+                                {/*                <HandHistory*/}
+                                {/*                    roundStatus={roundStatus}*/}
+                                {/*                />*/}
+                                {/*            }*/}
+                                {/*        </div>*/}
+                                {/*    </div>*/}
+                                {/*}*/}
                             </div>
                         </Col>
-                        <Col sm={0} md={0} lg={1} xl={1} />
+                        {/*<Col sm={0} md={0} lg={1} xl={1}/>*/}
+                        <Col>
+                            <div id="zoom-iframe">
+                                <link rel="import" href={meetingUrl}></link>
+                                {/*<iframe src={meetingUrl}></iframe>*/}
+                            </div>
+                        </Col>
                     </Row>
                     {
-                        windowWidth <= 1280 &&
+                        // windowWidth <= 1280 &&
+
                         <Row>
-                            <Col md={1} />
-                            <Col md={10}>
+                            {/*<Col md={1}/>*/}
+                            <Col md={6}>
                                 <Tabs defaultActiveKey="gameStatus">
                                     <Tab eventKey="gameStatus" title="Game Status">
                                         <GameStatusIndicator
@@ -268,16 +283,17 @@ const BelotePage = () => {
                                     </Tab>
                                     {lobbyEvents.length > 0 &&
                                         <Tab eventKey="lobbyActivity" title="Lobby Activity">
-                                            <RoomChat events={lobbyEvents} />
+                                            <RoomChat events={lobbyEvents}/>
                                         </Tab>
                                     }
                                 </Tabs>
                             </Col>
                         </Row>
                     }
-                </div >
+
+                </div>
             }
-        </div >
+        </div>
     );
 }
 

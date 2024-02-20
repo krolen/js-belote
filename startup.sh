@@ -1,5 +1,5 @@
 #!/bin/bash
-git switch deploy
+#git switch deploy
 
 docker compose build
 docker compose down

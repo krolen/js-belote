@@ -2,7 +2,8 @@ import styles from './GameStatusIndicator.module.scss';
 import {useTranslation} from 'react-i18next';
 import IndicatorBox from './../IndicatorBox';
 import {Table, ListGroup, InputGroup, Button} from 'react-bootstrap'
-import {useEffect, useState} from "react";
+import {Fragment, useEffect, useState} from "react";
+import Card from "../Card";
 
 function GameStatusIndicator(props) {
     const {t} = useTranslation('translations');
@@ -36,17 +37,38 @@ function GameStatusIndicator(props) {
     }
 
     useEffect(() => {
-        console.log("updating teams " +  + JSON.stringify(props.gameStatus))
-        if(props.gameStatus && (props.gameStatus.teamsValid === true)) {
+        console.log("updating teams " + +JSON.stringify(props.gameStatus))
+        if (props.gameStatus && (props.gameStatus.teamsValid === true)) {
             setTeam0(props.gameStatus.teams[0])
             setTeam1(props.gameStatus.teams[1])
         }
     }, [props]);
 
-    console.log("re-render component")
     if (props.gameStatus) {
         if (props.gameStatus.teamsValid === true) {
-            console.log("teams are valid " + JSON.stringify(props.gameStatus));
+
+            const scores = []
+            let count = 0;
+            //create rows
+            if (props.gameStatus.pastRoundsScores) {
+                for (const pastRoundScore of props.gameStatus.pastRoundsScores) {
+                    let item = (
+                        <tr>
+                            <th className={styles.strongestCardTD}>
+                                Round {count++}
+                            </th>
+                            <td className={styles.strongestCardTD}>
+                                {pastRoundScore[0]}
+                            </td>
+                            <td className={styles.strongestCardTD}>
+                                {pastRoundScore[1]}
+                            </td>
+                        </tr>
+                    );
+                    scores.push(item)
+                }
+            }
+
             return (
                 <div className={styles.container}>
                     <IndicatorBox
@@ -97,7 +119,12 @@ function GameStatusIndicator(props) {
                                             > Switch Players </Button>
                                         </td>
                                     </tr>
-
+                                    {scores.length > 0 && scores.map((score, index) => (
+                                        // Remember to add a unique key for each element when rendering in a loop
+                                        <Fragment key={index}>
+                                            {score}
+                                        </Fragment>
+                                    ))}
                                     <tr>
                                         <th className={styles.tableHeaderData}>{t('gameStatusIndicator.scoreLabel')}</th>
                                         <td className={styles.tableBodyData}>{props.gameStatus.teamScores[0]}</td>

@@ -172,10 +172,10 @@ class Premium {
     }
 
     checkValid4() {
-        if (this.cards.length != 4) return false;
+        if (this.cards.length !== 4) return false;
 
         const rank = this.cards[0].rank;
-        if (rank == '7' || rank == '8') return false;
+        if (rank === '7' || rank == '8') return false;
         for (const card of this.cards) {
             if (card.rank != rank) return false;
         }
@@ -703,8 +703,8 @@ class Round {
 
         for (const cards of sortedCardsPerSuit) {
             for (let i = 0; i < cards.length - 1; i++) {
-                if ((cards[i].rank == 'Q') && (cards[i + 1].rank == 'K')) {
-                    if (new Premium(this.playerName, 'B', this.suit, [cards[i], cards[i + 1]]).valid == true) {
+                if ((cards[i].rank === 'Q') && (cards[i + 1].rank === 'K')) {
+                    if (new Premium(this.playerName, 'B', this.suit, [cards[i], cards[i + 1]]).valid === true) {
                         if (this.suit === 'A') {
                             if (this.cardsOnTable.cards.length === 0) available_premiums.push([cards[i], cards[i + 1]]);
                             else if (this.cardsOnTable.cards[0].suit === cards[i].suit) available_premiums.push([cards[i], cards[i + 1]]);
@@ -731,7 +731,7 @@ class Round {
             }
             cardsBySuit.push(cards)
         }
-        //sort cards seperately
+        //sort cards separately
         const sortedCardsPerSuit = []
         for (let cards of cardsBySuit) {
             sortedCardsPerSuit.push(this.sortCards(cards))
@@ -790,7 +790,7 @@ class Round {
         for (const premium_option of this.premium_card_order) {
             let cards = [];
             for (const card of hand.cards) {
-                if (card.rank == premium_option)
+                if (card.rank === premium_option)
                     cards.push(card)
             }
             if (cards.length === 4) available_premiums.push([...cards]);
@@ -814,13 +814,13 @@ class Round {
 
     checkIfCardCanBePlaced(playerName, cardSuit, cardRank) {
         // check if it's the player's turn
-        if (playerName != this.players[this.playerTurn]) return false;
+        if (playerName !== this.players[this.playerTurn]) return false;
 
         // check if player hasn't already played this round
         for (const card of this.cardsOnTable.cards)
-            if (card.placedBy == playerName) return false;
+            if (card.placedBy === playerName) return false;
 
-        if (this.cardsOnTable.cards.length == 0) return true
+        if (this.cardsOnTable.cards.length === 0) return true
         else {
             // set up some vars
             const initialCard = this.cardsOnTable.cards[0]
@@ -846,8 +846,8 @@ class Round {
             let player_has_stronger_card_from_suit = false;
             if (player_has_requested_suit)
                 for (const cardFromHand of playerHand.cards) {
-                    if (cardFromHand.suit == initialCard.suit) {
-                        if (this.compareCardStrength(strongestCard.suit, strongestCard.rank, cardFromHand.suit, cardFromHand.rank) == 1) {
+                    if (cardFromHand.suit === initialCard.suit) {
+                        if (this.compareCardStrength(strongestCard.suit, strongestCard.rank, cardFromHand.suit, cardFromHand.rank) === 1) {
                             player_has_stronger_card_from_suit = true;
                             break;
                         }
@@ -858,14 +858,14 @@ class Round {
             // check if player is holding a stronger card from any suit
             let player_has_stronger_card_from_any_suit = false;
             for (const cardFromHand of playerHand.cards) {
-                if (this.compareCardStrength(strongestCard.suit, strongestCard.rank, cardFromHand.suit, cardFromHand.rank) == 1) {
+                if (this.compareCardStrength(strongestCard.suit, strongestCard.rank, cardFromHand.suit, cardFromHand.rank) === 1) {
                     player_has_stronger_card_from_any_suit = true;
                     break;
                 }
             }
 
             //check if player team is holding this round
-            if (holdingTeam == this.getPlayerTeam(playerName)) {
+            if (holdingTeam === this.getPlayerTeam(playerName)) {
                 //if card is trump or suit is A you must give higher if you can
                 if (initialCard.suit === this.suit || this.suit === 'A') {
                     if (player_has_stronger_card_from_suit) {

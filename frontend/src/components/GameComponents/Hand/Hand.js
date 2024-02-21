@@ -136,23 +136,23 @@ const Hand = (props) => {
                 {cardsToShow}
             </div>
             <div className={styles.btnContainer}>
-                {cardsToShow.length > 0 &&
-                    <Button
-                        className={styles.switchCardDirectionButton}
-                        variant="outline-secondary"
-                        onClick={() => {
-                            setSelected(-1);
-                            setReverseCardOrder(!reverseCardOrder);
-                        }}
-                    >
-                        {reverseCardOrder &&
-                            <ArrowIcon className={styles.arrowRotated}/>
-                        }
-                        {!reverseCardOrder &&
-                            <ArrowIcon/>
-                        }
-                    </Button>
-                }
+            {/*    {cardsToShow.length > 0 &&*/}
+            {/*        <Button*/}
+            {/*            className={styles.switchCardDirectionButton}*/}
+            {/*            variant="outline-secondary"*/}
+            {/*            onClick={() => {*/}
+            {/*                setSelected(-1);*/}
+            {/*                setReverseCardOrder(!reverseCardOrder);*/}
+            {/*            }}*/}
+            {/*        >*/}
+            {/*            {reverseCardOrder &&*/}
+            {/*                <ArrowIcon className={styles.arrowRotated}/>*/}
+            {/*            }*/}
+            {/*            {!reverseCardOrder &&*/}
+            {/*                <ArrowIcon/>*/}
+            {/*            }*/}
+            {/*        </Button>*/}
+            {/*    }*/}
                 {/*{props.showCards && selected !== -1 &&*/}
                 {/*    <Button*/}
                 {/*        className={styles.playCardButton}*/}

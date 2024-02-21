@@ -253,8 +253,8 @@ io.on("connection", async (socket) => {
                                 await sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', roundStatus)
                                 await sendMoveOptionsToPlayers(room_entry)
 
-                                // if (room_entry.gameInstance.currentRound.getRoundStatus().status === 'over') {
-                                //     await sendToAllPlayersInRoom(room_entry, 'roundScoreUpdate', room_entry.gameInstance.currentRound.getRoundResults())
+                                if (room_entry.gameInstance.currentRound.getRoundStatus().status === 'over') {
+                                    await sendToAllPlayersInRoom(room_entry, 'roundScoreUpdate', room_entry.gameInstance.currentRound.getRoundResults())
                                 //     await room_entry.gameInstance.endCurrentRound()
                                 //     await sendToAllPlayersInRoom(room_entry, 'gameStatusUpdate', room_entry.gameInstance.getGameInfo())
 
@@ -263,7 +263,7 @@ io.on("connection", async (socket) => {
                                     //
                                     // sendMoveOptionsToPlayers(room_entry)
                                     // sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
-                                // }
+                                }
                             }
                         }
                     } catch (err) {
@@ -286,8 +286,8 @@ io.on("connection", async (socket) => {
                                 }
                                 await sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
 
-                                // if (room_entry.gameInstance.currentRound.getRoundStatus().status === 'over') {
-                                //     await sendToAllPlayersInRoom(room_entry, 'roundScoreUpdate', room_entry.gameInstance.currentRound.getRoundResults())
+                                if (room_entry.gameInstance.currentRound.getRoundStatus().status === 'over') {
+                                    await sendToAllPlayersInRoom(room_entry, 'roundScoreUpdate', room_entry.gameInstance.currentRound.getRoundResults())
                                 //     await room_entry.gameInstance.endCurrentRound()
                                 //     await sendToAllPlayersInRoom(room_entry, 'gameStatusUpdate', room_entry.gameInstance.getGameInfo())
 
@@ -296,7 +296,7 @@ io.on("connection", async (socket) => {
                                 //
                                 // sendMoveOptionsToPlayers(room_entry)
                                 // sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
-                                // }
+                                }
                             }
                         }
                     } catch (err) {

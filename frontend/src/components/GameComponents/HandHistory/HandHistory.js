@@ -2,6 +2,7 @@ import styles from './HandHistory.module.scss'
 import IndicatorBox from './../IndicatorBox'
 import { useTranslation } from 'react-i18next';
 import { Table } from 'react-bootstrap'
+import Card from "../Card";
 
 function HandHistory(props) {
     const { t } = useTranslation('translations');
@@ -29,20 +30,30 @@ function HandHistory(props) {
 
                     item = (
                         <td className={styles.strongestCardTD} key={historyCard.rank + historyCard.suit}>
-                            {historyCard.rank}{historyCard.suit}
+                        <div className={styles.verticalListItem}>
+                            <Card
+                                rank={historyCard.rank}
+                                suit={historyCard.suit}
+                                active={false}
+                            />
+                        </div>
                         </td>
                     );
                 else
                     item = (
                         <td className={styles.cardTD} key={historyCard.rank + historyCard.suit}>
-                            {historyCard.rank}{historyCard.suit}
+                            <div className={styles.verticalListItem}>
+                                <Card
+                                    rank={historyCard.rank}
+                                    suit={historyCard.suit}
+                                    active={false}
+                                />
+                            </div>
                         </td>
                     );
 
-
                 rowItems.splice(players.indexOf(historyCard.placedBy), 0, item);
             }
-
 
             const historyTR = (
                 <tr key={historyItem.cards[0].rank + historyItem.cards[0].suit}>
@@ -53,10 +64,12 @@ function HandHistory(props) {
         }
 
         history.reverse()
+
+        let historySize = 1
         // if game is in progress cut history so only last three cards are visible
-        if (history.length > 3 && props.roundStatus.status === 'in_progress') history.length = 3
-        // make the table always have 3 data rows so that it doesn't change size in the begining of the game
-        while (history.length < 3) history.push(<tr key={history.length} />)
+        if (history.length > historySize && props.roundStatus.status === 'in_progress') history.length = historySize
+        // make the table always have 3 data rows so that it doesn't change size in the beginning of the game
+        while (history.length < historySize) history.push(<tr key={history.length} />)
 
         let containerHeader
         if (props.roundStatus.status === 'in_progress') containerHeader = t('handHistory.containerLabel3Hands')

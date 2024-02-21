@@ -136,7 +136,7 @@ io.on("connection", async (socket) => {
                         }
                         let newClients = []
                         for (const playerName of args) {
-                        // for (const playerName of args[0]) {
+                            // for (const playerName of args[0]) {
                             for (const client of room_entry.clients) {
                                 if (client.displayName === playerName) {
                                     newClients.push(client)
@@ -238,7 +238,7 @@ io.on("connection", async (socket) => {
                             if (suitRes) {
                                 let roundStatus = room_entry.gameInstance.currentRound.getRoundStatus()
 
-                                if (room_entry.gameInstance.currentRound.getRoundStatus().status == 'suit_selected') {
+                                if (room_entry.gameInstance.currentRound.getRoundStatus().status === 'suit_selected') {
                                     room_entry.gameInstance.currentRound.initPlayStage()
                                     roundStatus = room_entry.gameInstance.currentRound.getRoundStatus()
                                 }
@@ -249,21 +249,21 @@ io.on("connection", async (socket) => {
                                     madeBy: displayName
                                 }
 
-                                sendToAllPlayersInRoom(room_entry, 'suitSelectionUpdate', suitSelection)
-                                sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', roundStatus)
-                                sendMoveOptionsToPlayers(room_entry)
+                                await sendToAllPlayersInRoom(room_entry, 'suitSelectionUpdate', suitSelection)
+                                await sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', roundStatus)
+                                await sendMoveOptionsToPlayers(room_entry)
 
-                                if (room_entry.gameInstance.currentRound.getRoundStatus().status === 'over') {
-                                    await sendToAllPlayersInRoom(room_entry, 'roundScoreUpdate', room_entry.gameInstance.currentRound.getRoundResults())
-                                    await room_entry.gameInstance.endCurrentRound()
-                                    await sendToAllPlayersInRoom(room_entry, 'gameStatusUpdate', room_entry.gameInstance.getGameInfo())
+                                // if (room_entry.gameInstance.currentRound.getRoundStatus().status === 'over') {
+                                //     await sendToAllPlayersInRoom(room_entry, 'roundScoreUpdate', room_entry.gameInstance.currentRound.getRoundResults())
+                                //     await room_entry.gameInstance.endCurrentRound()
+                                //     await sendToAllPlayersInRoom(room_entry, 'gameStatusUpdate', room_entry.gameInstance.getGameInfo())
 
                                     // //sleep for 15 secs before starting new round
                                     // await new Promise(resolve => setTimeout(resolve, 5000));
                                     //
                                     // sendMoveOptionsToPlayers(room_entry)
                                     // sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
-                                }
+                                // }
                             }
                         }
                     } catch (err) {
@@ -276,27 +276,27 @@ io.on("connection", async (socket) => {
                         log("info", room_id, `Getting command to play card: ${JSON.stringify(args)} from ${displayName} (${client_id})`)
                         if (room_entry.gameInstance) {
                             //create a copy of the round state in case 4 cards are placed and game needs to pause
-                            const startingRoundState = JSON.parse(JSON.stringify(await room_entry.gameInstance.currentRound.getRoundStatus()));
+                            const startingRoundState = JSON.parse(JSON.stringify(room_entry.gameInstance.currentRound.getRoundStatus()));
 
                             if (room_entry.gameInstance.currentRound.placeCard(displayName, args.suit, args.rank)) {
                                 // pause for 2 secs if there's 4 cards on the table so players can see them
-                                sendMoveOptionsToPlayers(room_entry)
+                                await sendMoveOptionsToPlayers(room_entry)
                                 if (startingRoundState.cardsOnTable.length === 3) {
                                     await delayCollectingCards(startingRoundState, args, displayName, room_entry)
                                 }
-                                sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
+                                await sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
 
-                                if (room_entry.gameInstance.currentRound.getRoundStatus().status === 'over') {
-                                    await sendToAllPlayersInRoom(room_entry, 'roundScoreUpdate', room_entry.gameInstance.currentRound.getRoundResults())
-                                    await room_entry.gameInstance.endCurrentRound()
-                                    sendToAllPlayersInRoom(room_entry, 'gameStatusUpdate', room_entry.gameInstance.getGameInfo())
+                                // if (room_entry.gameInstance.currentRound.getRoundStatus().status === 'over') {
+                                //     await sendToAllPlayersInRoom(room_entry, 'roundScoreUpdate', room_entry.gameInstance.currentRound.getRoundResults())
+                                //     await room_entry.gameInstance.endCurrentRound()
+                                //     await sendToAllPlayersInRoom(room_entry, 'gameStatusUpdate', room_entry.gameInstance.getGameInfo())
 
-                                    //sleep for 15 secs before starting new round
-                                    // await new Promise(resolve => setTimeout(resolve, 15000));
-                                    //
-                                    // sendMoveOptionsToPlayers(room_entry)
-                                    // sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
-                                }
+                                //sleep for 15 secs before starting new round
+                                // await new Promise(resolve => setTimeout(resolve, 15000));
+                                //
+                                // sendMoveOptionsToPlayers(room_entry)
+                                // sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
+                                // }
                             }
                         }
                     } catch (err) {
@@ -304,15 +304,19 @@ io.on("connection", async (socket) => {
                     }
                 });
 
-                socket.on('nextRound', async (args) => {
+                socket.on('nextRound', async (scoreAdjustments) => {
                     try {
-                        log("info", room_id, `Next round command: ${JSON.stringify(args)} from ${displayName} (${client_id})`)
-                        // if (room_entry.gameInstance && room_entry.gameInstance.currentRound.getRoundStatus().status === 'over') {
-                        if (room_entry.gameInstance) {
+                        log("info", room_id, `Next round command: ${JSON.stringify(scoreAdjustments)} from ${displayName} (${client_id})`)
+                        const gameInstance = room_entry.gameInstance;
+                        if (gameInstance && gameInstance.currentRound.getRoundStatus().status === 'over') {
+                            // if (room_entry.gameInstance) {
                             // this.shiftPlayerTurn();
+                            gameInstance.currentRound.adjustScores(parseInt(scoreAdjustments.team1Correction), parseInt(scoreAdjustments.team2Correction))
+                            await room_entry.gameInstance.endCurrentRound()
 
-                            sendMoveOptionsToPlayers(room_entry)
-                            sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
+                            await sendToAllPlayersInRoom(room_entry, 'gameStatusUpdate', room_entry.gameInstance.getGameInfo())
+                            await sendMoveOptionsToPlayers(room_entry)
+                            await sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
                         }
                     } catch (err) {
                         log("error", room_id, `Error handling request: ${err}`)
@@ -505,11 +509,13 @@ const startGame = (roomId) => {
 
 
 const shouldCreateNewGame = (currentInstance, clients) => {
-    if (currentInstance === null) return true;
-    else {
+    if (currentInstance === null) {
+        return true;
+    } else {
         //check if players are already in game - if game is not over and all the player names match, they should resume
-        if (currentInstance.gameStatus === 'over') return true;
-        else {
+        if (currentInstance.gameStatus === 'over') {
+            return true;
+        } else {
             let playersInGame = true
             for (const client of clients) {
                 if (!currentInstance.currentRound.getRoundStatus().players.includes(client.displayName))

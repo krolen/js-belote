@@ -8,44 +8,6 @@ function Footer(props) {
 
     return (
         <Jumbotron className={styles.footerContainer}>
-            <Row>
-                <Col sm={0} md={1} lg={2} />
-                <Col sm={12} md={10} lg={8}>
-                    <Row>
-                        <Col sm={12} md={6} lg={3}>
-                            <p>
-                                {t('footer.cookieStatement1')}
-                                <br />
-                                {t('footer.cookieStatement2')}
-                            </p>
-                        </Col>
-                        <Col sm={12} md={6} lg={6}>
-                            <p>
-                                {t('footer.copyright')}
-                                <a href={"https://github.com/justitsi/js-belote/blob/master/LICENSE"}>
-                                    {t('footer.copyrightLinkLabel')}
-                                </a>.
-                            </p>
-
-                            <p>
-                                {t('footer.githubLinkExplanation')}
-                                <a href={"https://github.com/justitsi/js-belote/issues/new/choose"}>
-                                    {t('footer.githubLinkLabel')}
-                                </a>.
-                            </p>
-                        </Col>
-                        <Col sm={12} md={12} lg={3}>
-                            <a href={"https://justitsi.tk"}>
-                                <img
-                                    className={styles.signature}
-                                    src={signature}
-                                    alt="Logo"
-                                />
-                            </a>
-                        </Col>
-                    </Row>
-                </Col>
-            </Row>
         </Jumbotron >
     );
 }

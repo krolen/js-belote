@@ -155,8 +155,8 @@ const BelotePage = () => {
         socket.emit("suitSelect", suit);
     }
 
-    const nextRound = () => {
-        socket.emit("nextRound");
+    const nextRound = (corrections) => {
+        socket.emit("nextRound", corrections);
     }
 
     const handleCardPlay = (card) => {

@@ -1,14 +1,17 @@
 import styles from './RoundScoreTable.module.scss'
-import { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next';
-import { Table, Button } from 'react-bootstrap'
+import {useState, useEffect} from 'react'
+import {useTranslation} from 'react-i18next';
+import {Table, Button} from 'react-bootstrap'
 
 function RoundScoreTable(props) {
-    const { t } = useTranslation('translations');
+    const {t} = useTranslation('translations');
 
     // add last 10 points to the team that got the last 4 cards
     const lastHandPoints = [0, 0]
     const totalRoundPoints = [0, 0]
+
+    const [team1Correction, setTeam1Correction] = useState('0');
+    const [team2Correction, setTeam2Correction] = useState('0');
 
     if (props.roundScore.card_scores) {
         // check if any round scores were issued - if both are zero, means that round was ended in passes
@@ -20,14 +23,19 @@ function RoundScoreTable(props) {
 
     const nextRoundAction = (event) => {
         event.preventDefault();
-        props.nextRoundAction()
+        const data = {
+            team1Correction,
+            team2Correction
+        };
+        console.log(`Calling with correction: ${data.team1Correction} ${data.team2Correction}`)
+        props.nextRoundAction(data)
     }
 
     return (
         <div>
             <Table className={styles.roundOverTable} hover>
                 <tr>
-                    <th />
+                    <th/>
                     <th>{t('roundScoreTable.team1PointsLabel')}</th>
                     <th>{t('roundScoreTable.team2PointsLabel')}</th>
                 </tr>
@@ -66,19 +74,39 @@ function RoundScoreTable(props) {
                         <th>{props.gameStatus.teamScores[1] - props.gameStatus.teamLastRoundScores[1]}</th>
                     </tr>
                 }
+
+                {props.showNextRoundButton &&
+                    <tr>
+                        <th>Score corrections</th>
+                        <td><input
+                            type="number"
+                            value={team1Correction}
+                            onChange={(e) => setTeam1Correction(e.target.value)}
+                            placeholder="Team 1 Score"
+                        />
+                        </td>
+                        <td><input
+                            type="number"
+                            value={team2Correction}
+                            onChange={(e) => setTeam2Correction(e.target.value)}
+                            placeholder="Team 2 Score"
+                        />
+                        </td>
+                    </tr>
+                }
+                {props.showNextRoundButton &&
+                    <div>
+                        <Button
+                            className={styles.splitPromptFromSubmitButton}
+                            onClick={nextRoundAction}
+                            type="submit"
+                        >
+                            Next Round
+                        </Button></div>
+                }
             </Table>
-            {props.showNextRoundButton &&
-                <Button
-                    className={styles.splitPromptFromSubmitButton}
-                    onClick={nextRoundAction}
-                    type={"submit"}
-                >
-                    {'NExt Round'}
-                </Button>
-            }
-
         </div>
-    );
-
+    )
 }
+
 export default RoundScoreTable

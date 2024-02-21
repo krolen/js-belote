@@ -1,7 +1,7 @@
 import ADJ_LIST from './dicts/adjs_filt.json';
 import NOUN_LIST from './dicts/nouns_filt.json';
 
-const DEBUG_LOG = false;
+const DEBUG_LOG = true;
 
 // valid types/levels are 'error', 'info' and 'debug'
 //                         = 0      = 1        = 2

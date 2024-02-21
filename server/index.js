@@ -1,8 +1,8 @@
 const Game = require('./modules/gameObjects')
 
-var app = require('express')();
-var server = require('http').Server(app);
-var io = require('socket.io')(server, {
+let app = require('express')();
+let server = require('http').Server(app);
+let io = require('socket.io')(server, {
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
@@ -12,9 +12,6 @@ var io = require('socket.io')(server, {
 });
 
 server.listen(8000);
-
-const http = require('http');
-
 
 const DEBUG_LOG = false;
 const rooms = [];
@@ -70,7 +67,7 @@ io.on("connection", async (socket) => {
                         if (room.id === roomID)
                             if (room.clients.length < room_limit)
                                 for (const client_entry of room.clients)
-                                    if (client_entry.displayName == displayName) {
+                                    if (client_entry.displayName === displayName) {
                                         isInRoom = true;
                                         break;
                                     }
@@ -91,14 +88,77 @@ io.on("connection", async (socket) => {
                 const client_id = socket.handshake.query.client;
                 const displayName = socket.handshake.query.displayName;
 
+                socket.on("startGame", (args) => {
+                    log("info", room_id, `startGame command: ${JSON.stringify(args)} from ${displayName} (${client_id})`)
+                    try {
+                        const room_entry = roomEntry(room_id, false);
+                        if (room_entry == null) {
+                            log("error", room_id, `Room not found: ${room_id}`)
+                            return
+                        }
+                        if (!isInRoom(room_entry, client_id, displayName)) {
+                            log("error", room_id, `user ${displayName} cannot start game - he/she is not in the room ${room_id}`)
+                            return
+                        }
+                        if (shouldCreateNewGame(room_entry.gameInstance, room_entry.clients)) {
+                            room_entry.gameInstance = new Game([
+                                room_entry.clients[0] ? room_entry.clients[0].displayName : null,
+                                room_entry.clients[1] ? room_entry.clients[1].displayName : null,
+                                room_entry.clients[2] ? room_entry.clients[2].displayName : null,
+                                room_entry.clients[3] ? room_entry.clients[3].displayName : null,
+                            ], room_entry.meetingUrl);
+                            sendToAllPlayersInRoom(room_entry, 'gameStatusUpdate', room_entry.gameInstance.getGameInfo())
+                        }
+                        const gameInfo = room_entry.gameInstance.getGameInfo();
+
+                        if (gameInfo.gameStatus !== "in_progress") {
+                            log("error", room_id, `Game status is invalid: ${gameInfo.gameStatus}`)
+                            return;
+                        }
+                        if (gameInfo.teamsValid !== true) {
+                            log("error", room_id, `Teams are not valid for a game ${gameInfo}`)
+                            return;
+                        }
+                        sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
+                        sendMoveOptionsToPlayers(room_entry)
+                    } catch (e) {
+                        log("error", room_id, `Error handling request: ${err}`)
+                    }
+                });
+
+                socket.on("switchPlayers", (args) => {
+                    log("info", room_id, `switchPlayers command: ${JSON.stringify(args)} from ${displayName} (${client_id})`)
+                    try {
+                        const room_entry = roomEntry(room_id, false);
+                        if (room_entry == null) {
+                            log("error", room_id, `Room not found: ${room_id}`)
+                            return
+                        }
+                        let newClients = []
+                        for (const playerName of args) {
+                        // for (const playerName of args[0]) {
+                            for (const client of room_entry.clients) {
+                                if (client.displayName === playerName) {
+                                    newClients.push(client)
+                                }
+                            }
+                        }
+
+                        room_entry.clients = newClients
+                        room_entry.gameInstance = null
+                        recreateNewGame(room_entry)
+                    } catch (e) {
+                        log("error", room_id, `Error handling request: ${err}`)
+                    }
+                });
 
                 // Leave the room if the user closes the socket
                 socket.on("disconnect", () => {
                     try {
                         socket.leave(client_id);
-                        log("info", room_id, `${client_id} left room`)
+                        log("info", room_id, `${displayName} (${client_id}) has left room`)
                         for (const client_entry of room_entry.clients) {
-                            if (client_entry.id == client_id) {
+                            if (client_entry.id === client_id) {
                                 const index = room_entry.clients.indexOf(client_entry);
                                 if (index > -1) {
                                     room_entry.clients.splice(index, 1);
@@ -113,9 +173,9 @@ io.on("connection", async (socket) => {
                         })
 
                         // delete the room if all users have left
-                        if (room_entry.clients.length == 0) {
+                        if (room_entry.clients.length === 0) {
                             for (const entry of rooms) {
-                                if (entry.id == room_id) {
+                                if (entry.id === room_id) {
                                     const index = rooms.indexOf(entry);
                                     if (index > -1) {
                                         rooms.splice(index, 1);
@@ -162,6 +222,7 @@ io.on("connection", async (socket) => {
                 });
 
                 socket.on('suitSelect', async (args) => {
+                    let currentSuit;
                     try {
                         log("info", room_id, `Getting command to select suit: ${args} from ${displayName} (${client_id})`)
 
@@ -265,6 +326,8 @@ io.on("connection", async (socket) => {
 
 async function getMeetingUrl(room_name) {
 
+    if (true) return "TODO"
+
     const data = JSON.stringify({
         "title": room_name,
         "source": "meet_control",
@@ -284,13 +347,12 @@ async function getMeetingUrl(room_name) {
 
     const json = await resp.json();
     return json.joinLink;
-
 }
 
 // game server funcs
 
 const delayCollectingCards = async (startingRoundState, args, displayName, room_entry) => {
-    if (startingRoundState.cardsOnTable.length == 3) {
+    if (startingRoundState.cardsOnTable.length === 3) {
         startingRoundState.cardsOnTable.push({
             "suit": args.suit,
             "rank": args.rank,
@@ -320,26 +382,16 @@ const sendToAllPlayersInRoom = async (room, evntType, data) => {
     }
 }
 
-
-const getRoomEntryAndJoin = async (socket) => {
-    // Join a room
-    const room_id = socket.handshake.query.room;
-    const client_id = socket.handshake.query.client;
-    const displayName = socket.handshake.query.displayName;
-
-    // get rooms arr entry
+const roomEntry = (roomId, create = true) => {
     let room_entry = null
     for (const item of rooms)
-        if (item.id == room_id)
+        if (item.id === roomId)
             room_entry = item
 
-
-    // init room data if needed
-    if (!room_entry) {
-        const meetingUrl = await getMeetingUrl(room_id);
-        console.log(meetingUrl)
+    if (create && !room_entry) {
+        const meetingUrl = getMeetingUrl(roomId);
         const room_data = {
-            id: room_id,
+            id: roomId,
             clients: [],
             gameInstance: null,
             messages: [],
@@ -349,16 +401,33 @@ const getRoomEntryAndJoin = async (socket) => {
         room_entry = room_data
     }
 
-    // check if user is already in room
+    return room_entry
+}
+
+const isInRoom = (room_entry, client_id, displayName) => {
     let isInRoom = false;
     for (const client_entry of room_entry.clients) {
-        if (client_entry.id == client_id) {
+        if (client_entry.id === client_id) {
             isInRoom = true
         }
-        if (client_entry.displayName == displayName) {
+        if (client_entry.displayName === displayName) {
             isInRoom = true
         }
     }
+    return isInRoom;
+}
+
+const getRoomEntryAndJoin = async (socket) => {
+    // Join a room
+    const room_id = socket.handshake.query.room;
+    const client_id = socket.handshake.query.client;
+    const displayName = socket.handshake.query.displayName;
+
+    // get rooms arr entry
+    let room_entry = roomEntry(room_id)
+
+    // check if user is already in room
+    let inRoom = isInRoom(room_entry, client_id, displayName);
 
     // check if room is not already full
     let isRoomFull = false;
@@ -371,7 +440,7 @@ const getRoomEntryAndJoin = async (socket) => {
     // update rooms arr entry and join
     // init game object for room if enough players are there
     // make init not reset game if player is already in it - I think reconnecting to a game might already work...?
-    if (!isInRoom && !isRoomFull) {
+    if (!inRoom && !isRoomFull) {
         socket.join(client_id);
         const new_connection = {
             id: client_id,
@@ -380,36 +449,60 @@ const getRoomEntryAndJoin = async (socket) => {
         room_entry.clients.push(new_connection);
         log("info", room_id, `client ${client_id} with username ${displayName} has joined room ${room_id}`)
 
-        sendToAllPlayersInRoom(room_entry, 'lobbyUpdate', {client: new_connection, action: "joined"})
+        await sendToAllPlayersInRoom(room_entry, 'lobbyUpdate', {client: new_connection, action: "joined"})
         // update global players counter
         updateNumPlayersOnline(1);
 
         //create new game if room has 4 people in it
-        log("info", room_id, room_entry.clients)
+        log("info", room_id, `Creating room with clients: ${room_entry.clients.map(client => {
+            return JSON.stringify(client);
+        })}`)
         // this doesn't work...
-        if (shouldCreateNewGame(room_entry.gameInstance, room_entry.clients)) {
-            room_entry.gameInstance = new Game([
-                room_entry.clients[0] ? room_entry.clients[0].displayName : null,
-                room_entry.clients[1] ? room_entry.clients[1].displayName : null,
-                room_entry.clients[2] ? room_entry.clients[2].displayName : null,
-                room_entry.clients[3] ? room_entry.clients[3].displayName : null,
-            ], room_entry.meetingUrl);
-            sendToAllPlayersInRoom(room_entry, 'gameStatusUpdate', room_entry.gameInstance.getGameInfo())
-
-            if (room_entry.gameInstance.getGameInfo().teamsValid == true) {
-                sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
-                sendMoveOptionsToPlayers(room_entry)
-            } else {
-                room_entry.gameInstance = null;
-            }
-        } else {
-            sendToAllPlayersInRoom(room_entry, 'gameStatusUpdate', room_entry.gameInstance.getGameInfo())
-            sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
-            sendMoveOptionsToPlayers(room_entry)
-        }
+        await recreateNewGame(room_entry)
     }
     return (room_entry);
 }
+
+
+const recreateNewGame = async (room_entry) => {
+    if (shouldCreateNewGame(room_entry.gameInstance, room_entry.clients)) {
+        room_entry.gameInstance = new Game([
+            room_entry.clients[0] ? room_entry.clients[0].displayName : null,
+            room_entry.clients[1] ? room_entry.clients[1].displayName : null,
+            room_entry.clients[2] ? room_entry.clients[2].displayName : null,
+            room_entry.clients[3] ? room_entry.clients[3].displayName : null,
+        ], room_entry.meetingUrl);
+        await sendToAllPlayersInRoom(room_entry, 'gameStatusUpdate', room_entry.gameInstance.getGameInfo());
+        // await sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
+
+        room_entry.gameInstance = null;
+
+        // if (room_entry.gameInstance.getGameInfo().teamsValid === true) {
+        //     sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
+        //     sendMoveOptionsToPlayers(room_entry)
+        // } else {
+        //     room_entry.gameInstance = null;
+        // }
+    } else {
+        await sendToAllPlayersInRoom(room_entry, 'gameStatusUpdate', room_entry.gameInstance.getGameInfo())
+        await sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
+        await sendMoveOptionsToPlayers(room_entry)
+    }
+}
+
+const startGame = (roomId) => {
+    const room_entry = roomEntry(roomId);
+    if (room_entry.gameInstance != null) {
+
+    }
+    if (room_entry.gameInstance.getGameInfo().teamsValid === true) {
+        sendToAllPlayersInRoom(room_entry, 'roundStatusUpdate', room_entry.gameInstance.currentRound.getRoundStatus())
+        sendMoveOptionsToPlayers(room_entry)
+    } else {
+        log("warn", roomId, "Cannot start game - teams are not valid")
+    }
+}
+
 
 const shouldCreateNewGame = (currentInstance, clients) => {
     if (currentInstance === null) return true;
@@ -432,16 +525,16 @@ const connectToServer = async (socket) => {
     const connID = socket.handshake.query.client;
 
     // connect to socket if id is not already registered
-    if (server_connections.indexOf(connID) == -1) {
+    if (server_connections.indexOf(connID) === -1) {
         server_connections.push(connID);
         socket.join(connID);
-        log("info", "SERVER", `${connID} joined the server`)
+        log("info", "SERVER", `${connID} joined the server, (action = ${socket.handshake.query.action})`)
     }
 
     socket.on("disconnect", () => {
         server_connections.splice(server_connections.indexOf(connID), 1)
         socket.leave(connID);
-        log("info", "SERVER", `${connID} left the server`)
+        log("info", "SERVER", `${connID} left the server, (action = ${socket.handshake.query.action})`)
     });
 
     return connID;

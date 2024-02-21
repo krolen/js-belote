@@ -1,8 +1,8 @@
 import styles from './BelotePage.module.scss';
-import { useState, useEffect, useContext } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { log } from "../../modules/util";
-import { connectToGameSocket, disconnectFromSocket } from '../../modules/socketActions';
+import {useState, useEffect, useContext} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
+import {log} from "../../modules/util";
+import {connectToGameSocket, disconnectFromSocket} from '../../modules/socketActions';
 import GameStatusIndicator from './../../components/GameComponents//GameStatusIndicator';
 import PremiumIndicator from './../../components/GameComponents//PremiumIndicator';
 import Hand from './../../components/GameComponents//Hand';
@@ -11,8 +11,8 @@ import RoomChat from '../../components/GameComponents/RoomChat';
 import HandHistory from './../../components/GameComponents/HandHistory';
 import PremiumOptions from './../../components/GameComponents/PremiumOptions';
 
-import { Row, Col, Tabs, Tab } from 'react-bootstrap';
-import { GameSocketContext, GameSettingsContext } from '../../modules/socketContexts';
+import {Row, Col, Tabs, Tab, Button} from 'react-bootstrap';
+import {GameSocketContext, GameSettingsContext} from '../../modules/socketContexts';
 
 const BelotePage = () => {
     // get application context
@@ -20,7 +20,7 @@ const BelotePage = () => {
     const [gameSocketID] = useContext(GameSocketContext);
     // get navigation hook
     const navigate = useNavigate();
-    const { urlRoomId } = useParams();
+    const {urlRoomId} = useParams();
     // window rendering vars
     const [windowWidth, setWindowWidth] = useState(window.innerWidth)
     // server conn vars
@@ -33,7 +33,7 @@ const BelotePage = () => {
     const [playerHand, setPlayerHand] = useState([])
     const [playerHandValidOptions, setPlayerHandValidOptions] = useState([])
     const [lobbyEvents, setLobbyEvents] = useState([])
-    const [premiumOptions, setPremiumOptions] = useState({ 'C': [], 'S': [] })
+    const [premiumOptions, setPremiumOptions] = useState({'C': [], 'S': []})
     const [suitSelectionHistory, setSuitSelectionHistory] = useState([])
     const [selectedPremiums, setSelectedPremiums] = useState([])
 
@@ -112,8 +112,7 @@ const BelotePage = () => {
                             validPremiums.push(validPremium)
                         }
                         setSelectedPremiums(validPremiums)
-                    }
-                    else setSelectedPremiums([])
+                    } else setSelectedPremiums([])
                 })
 
 
@@ -131,8 +130,7 @@ const BelotePage = () => {
                     disconnectFromSocket(socket_connection)
                 }
             }
-        }
-        else {
+        } else {
             // if no username go set one here
             if (roomNameAvailable) {
                 if (roomID) navigate(`/belote/lobby/${roomID}`)
@@ -174,8 +172,18 @@ const BelotePage = () => {
         socket.emit("anouncePremium", premiums);
     }
 
+    const startGame = () => {
+        socket.emit("startGame", roomID);
+    }
+
+    const switchPlayers = (switchPlayers) => {
+        socket.emit("switchPlayers", switchPlayers);
+    }
+
     // refresh window width on resize
-    window.addEventListener("resize", () => { setWindowWidth(window.innerWidth) });
+    window.addEventListener("resize", () => {
+        setWindowWidth(window.innerWidth)
+    });
 
     return (
         < div className={styles.page}>
@@ -269,7 +277,15 @@ const BelotePage = () => {
                                             gameStatus={gameStatus}
                                             roundStatus={roundStatus}
                                             roomID={roomID}
+                                            switchPlayers={switchPlayers}
                                         />
+                                        <Button
+                                            className={styles.splitPromptFromSubmitButton}
+                                            onClick={startGame}
+                                            type={"submit"}
+                                        >
+                                            {'Start Game'}
+                                        </Button>
                                     </Tab>
                                     <Tab eventKey="premiums" title="Premiums">
                                         <PremiumIndicator

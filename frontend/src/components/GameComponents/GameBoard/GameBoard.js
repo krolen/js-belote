@@ -231,7 +231,7 @@ function GameBoard(props) {
         }
     }
 
-    if(props.gameStatus) {
+    if (props.gameStatus) {
         meetingUrl = props.gameStatus.meetingUrl
     }
 
@@ -264,9 +264,7 @@ function GameBoard(props) {
 
     return (
         <div className={styles.overAllContainer}>
-            {/*<h5 className={styles.playerLabelText}>*/}
-            {/*    {meetingUrl}*/}
-            {/*</h5>*/}
+
             <div/>
             <BlankHand
                 cardCount={nNumOfCards}

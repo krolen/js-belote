@@ -1,8 +1,51 @@
 .App {
-    overflow-x: hidden;
-    overflow-y: hidden;
+    //overflow-x: hidden;
+    //overflow-y: hidden;
+    display: flex;
+    //flex-direction: column;
+    //height: 100vh; /* Set the height of the container */
+
+    //display: grid;
+    //grid-template-columns: 1fr auto; /* Main content and additional component */
+    //grid-template-rows: auto 1fr auto; /* Navbar, main content, and footer */
+    //height: 100vh;
+}
+
+.AppColumn {
+    //overflow-x: hidden;
+    //overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    //height: 100vh; /* Set the height of the container */
+
+    //display: grid;
+    //grid-template-columns: 1fr auto; /* Main content and additional component */
+    //grid-template-rows: auto 1fr auto; /* Navbar, main content, and footer */
+    //height: 100vh;
 }
 
 .content {
+    //grid-column: 1 / 2; /* Span the first column */
+    //grid-row: 2 / 3; /* Span the second row */
+    //flex: 1; /* Allow the content to take up remaining space */
+
     min-height: 97vh;
+    //max-width: 80vh;
+
+    flex: 1;
+    padding: 10px;
+
+      //margin-left: 20px; /* Example margin */
+}
+
+.additionalComponent {
+    //grid-column: 2 / 3; /* Span the second column */
+    //grid-row: 2 / 3; /* Span the second row */
+    /* Add styles to position the component to the right */
+    //flex: 0 0 auto; /* Additional component won't grow or shrink and takes its initial size based on content */
+    margin: 20px; /* Example margin */
+    //flex: 0 0 auto; /* This div won't grow or shrink */
+    width: 900px;
+    //width: 50%;
+
 }

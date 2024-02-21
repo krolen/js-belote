@@ -21,7 +21,8 @@
     "socket.io-client": "^4.0.0",
     "uuid": "^8.3.2",
     "web-vitals": "^1.1.1",
-    "webfontloader": "^1.6.28"
+    "webfontloader": "^1.6.28",
+    "@jitsi/react-sdk": "^1.4.0"
   },
   "scripts": {
     "start": "react-scripts start",

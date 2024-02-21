@@ -1,18 +1,18 @@
 import styles from './MainPage.module.scss';
-import { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { generateRoomName } from './../../modules/util';
-import { useTranslation } from 'react-i18next';
-import { Button, Col, Jumbotron, Row, Form, FormControl } from 'react-bootstrap';
+import {useState, useEffect, useContext} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {generateRoomName} from './../../modules/util';
+import {useTranslation} from 'react-i18next';
+import {Button, Col, Jumbotron, Row, Form, FormControl} from 'react-bootstrap';
 import RoomIndicatorContainer from './../../components/SiteComponents/RoomIndicatorContainer';
-import { SocketContext } from '../../modules/socketContexts';
+import {SocketContext} from '../../modules/socketContexts';
 
 const MainPage = (props) => {
     const navigate = useNavigate();
     const [serverClientID, serverSocket] = useContext(SocketContext);
     const [roomID, setRoomID] = useState("");
     const [availableRooms, setAvailableRooms] = useState([]);
-    const { t } = useTranslation('translations');
+    const {t} = useTranslation('translations');
 
     useEffect(() => {
         // get data from socket
@@ -21,7 +21,6 @@ const MainPage = (props) => {
             setAvailableRooms(args)
         });
     }, [serverClientID, serverSocket]);
-
 
 
     const handleCTASubmit = (evt) => {
@@ -35,7 +34,7 @@ const MainPage = (props) => {
 
     return (
         <div className={styles.page}>
-            <br />
+            <br/>
             <Row>
                 <Col md={2}></Col>
                 <Col md={8}>
@@ -67,7 +66,7 @@ const MainPage = (props) => {
                                             />
                                         </Form.Group>
 
-                                        <Form.Group style={{ "marginTop": "0.5rem" }}>
+                                        <Form.Group style={{"marginTop": "0.5rem"}}>
                                             {!roomID &&
                                                 <Button
                                                     variant="primary"
@@ -96,7 +95,7 @@ const MainPage = (props) => {
                     </Jumbotron>
                 </Col>
                 <Col md={2}></Col>
-            </Row >
+            </Row>
             <Row>
                 <Col md={2}></Col>
                 <Col md={8}>
@@ -110,7 +109,7 @@ const MainPage = (props) => {
                 </Col>
                 <Col md={2}></Col>
             </Row>
-        </div >
+        </div>
     );
 }
 

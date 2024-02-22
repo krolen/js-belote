@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: C:\Users\kot\tools\kompose\kompose-windows-amd64.exe convert
+    kompose.version: 1.32.0 (765fde254)
+  labels:
+    io.kompose.service: websocket
+  name: websocket
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: websocket
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: C:\Users\kot\tools\kompose\kompose-windows-amd64.exe convert
+        kompose.version: 1.32.0 (765fde254)
+      labels:
+        io.kompose.network/js-belote-default: "true"
+        io.kompose.service: websocket
+    spec:
+      containers:
+        - args:
+            - bash
+            - -c
+            - NODE_ENV=production node index.js
+          image: websocket
+          name: websocket
+      restartPolicy: Always

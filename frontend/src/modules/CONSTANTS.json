@@ -1,14 +1,17 @@
 {
-    "game_server_addr": "http://localhost:8000",
-    "call_rank_order": [
-        "P",
-        "C",
-        "D",
-        "H",
-        "S",
-        "N",
-        "A",
-        "x2",
-        "x4"
-    ]
+  "game_server_addr": "http://localhost:8000",
+
+  "video_server_addr": "conference.facil.services",
+
+  "call_rank_order": [
+    "P",
+    "C",
+    "D",
+    "H",
+    "S",
+    "N",
+    "A",
+    "x2",
+    "x4"
+  ]
 }

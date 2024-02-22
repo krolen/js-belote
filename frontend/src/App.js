@@ -20,6 +20,7 @@ import LobbyPage from "./content/LobbyPage";
 import Navbar from './components/SiteComponents/Navbar';
 import Footer from './components/SiteComponents/Footer';
 import {JaaSMeeting, JitsiMeeting} from "@jitsi/react-sdk";
+import CONSTANTS from "./modules/CONSTANTS.json";
 
 
 const App = () => {
@@ -45,8 +46,6 @@ const App = () => {
         log("debug", `Set playerName to: ${name}`)
     }
 
-    // see https://jitsi.github.io/handbook/docs/community/community-instances/
-    const videoServer = "conference.facil.services"
 
     const [gameRoomId, setGameRoomId] = useState("");
     const updateGameRoomId = (name) => {
@@ -106,7 +105,7 @@ const App = () => {
 
                             <div className={styles.additionalComponent}>
                                 <JaaSMeeting
-                                    domain={videoServer}
+                                    domain={CONSTANTS.video_server_addr}
                                     appId="MyAPP"
                                     configOverwrite={{
                                         startWithAudioMuted: true,
